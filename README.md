@@ -4,6 +4,7 @@
 
 - **适合谁**：学过 Transformer 基本结构、训过或读过 nanoGPT，想读懂工业界大模型论文的人
 - **每课结构**：核心问题 → 补基础 → 动画讲解 → 论文 → 代码 → 延伸阅读
+- **关键资料**：每课列出 1–3 个最核心的来源。论文精确到章节，代码精确到文件和行号，链接指向固定的提交版本，日后官方仓库更新也不会失效
 - **规模**：37 课。主线 22 课（★），按顺序看完能读懂 V3 → R1 → V3.2 → V4 → V4.1；选修 15 课（○），可以插在任意一篇之后
 - **发布**：视频发布在 B 站（链接见下方课程目录，陆续更新）
 
@@ -13,140 +14,142 @@
 ### 0 导论
 
 - ★ **L00 从你的 GPT-3 Small 到 DeepSeek-V4：一张地图**  
-  工业界论文看不懂，差的不是数学，是"规模带来的新问题"。从 124M 到 1.6T 参数，冒出了哪几类新问题？
+  工业界论文看不懂，差的不是数学，是"规模带来的新问题"。从 124M 到 1.6T 参数，冒出了哪几类新问题？  
+  关键资料：[Insights into V3](https://arxiv.org/abs/2505.09343)（官方对 V3 设计的复盘，可当全景图）；[DeepSeek-V3 §1](https://arxiv.org/abs/2412.19437)
 
 ### 1 基础模型与 MoE
 
 - ★ **L01 DeepSeek LLM：放大版 nanoGPT 与 Scaling Law**  
   算力固定时，参数和数据该怎么分？为什么不能只加参数？  
-  论文：[2401.02954](https://arxiv.org/abs/2401.02954)
+  关键资料：[DeepSeek LLM §3](https://arxiv.org/abs/2401.02954)（Scaling Laws）；[DeepSeek LLM §2.2](https://arxiv.org/abs/2401.02954)（LLaMA 式结构）
 - ★ **L02 MoE 入门：把一个大 FFN 拆成很多小专家**  
   总参数变多了，为什么每个 token 的计算量不一定跟着变多？  
-  论文：[2401.06066](https://arxiv.org/abs/2401.06066)
+  关键资料：[DeepSeekMoE §3](https://arxiv.org/abs/2401.06066)（细粒度专家与共享专家）；[DeepSeek-V3 §2.1.2](https://arxiv.org/abs/2412.19437)；[DeepSeek-V3/inference/model.py:535](https://github.com/deepseek-ai/DeepSeek-V3/blob/9b4e9788e4a3a731f7567338ed15d3ec549ce03b/inference/model.py#L535)
 - ★ **L03 负载均衡：不加辅助损失，专家怎么不偷懒**  
   总有几个专家被挤爆，其他专家闲着。能不能不改主损失就把负载分匀？  
-  论文：[2408.15664](https://arxiv.org/abs/2408.15664)
+  关键资料：[DeepSeek-V2 §2.2.2–§2.2.4](https://arxiv.org/abs/2405.04434)（V2 的三种均衡损失）；[Loss-Free 均衡 §3](https://arxiv.org/abs/2408.15664)（不加辅助损失的偏置均衡）；[DeepSeek-V3/inference/model.py:535](https://github.com/deepseek-ai/DeepSeek-V3/blob/9b4e9788e4a3a731f7567338ed15d3ec549ce03b/inference/model.py#L535)（看 bias 如何参与 top-k）
 - ○ **L04 ESFT：只微调和任务相关的专家**  
   模型每次只用少数专家，微调能不能也只动这几个？  
-  论文：[2407.01906](https://arxiv.org/abs/2407.01906)
+  关键资料：[ESFT §3](https://arxiv.org/abs/2407.01906)；[ESFT/esft.py](https://github.com/deepseek-ai/ESFT/blob/3746ca74410c92163cc521571dbd17579bfdc962/esft.py)
 
 ### 2 KV cache 与 MLA
 
 - ★ **L05 先算账：KV cache 有多大，MLA 怎么压缩它**（已制作）  
   模型装得下，为什么还服务不了长对话？  
-  论文：[2405.04434](https://arxiv.org/abs/2405.04434)
+  关键资料：[DeepSeek-V2 §2.1](https://arxiv.org/abs/2405.04434)（低秩压缩、矩阵吸收、解耦 RoPE）；[DeepSeek-V3/inference/model.py:396](https://github.com/deepseek-ai/DeepSeek-V3/blob/9b4e9788e4a3a731f7567338ed15d3ec549ce03b/inference/model.py#L396)（naive 与 absorb 两个分支）；[Insights into V3 §2.1.2](https://arxiv.org/abs/2505.09343)（KV cache 横向对比）
 - ★ **L06 V3 架构总装：逐行读 model.py**  
   把 MLA、MoE、MTP 拼在一起，一个 token 从进入模型到输出经过了什么？  
-  论文：[2412.19437](https://arxiv.org/abs/2412.19437)
+  关键资料：[DeepSeek-V3 §2](https://arxiv.org/abs/2412.19437)；[DeepSeek-V3/inference/model.py:696](https://github.com/deepseek-ai/DeepSeek-V3/blob/9b4e9788e4a3a731f7567338ed15d3ec549ce03b/inference/model.py#L696)；[DeepSeek-V3/README_WEIGHTS.md](https://github.com/deepseek-ai/DeepSeek-V3/blob/9b4e9788e4a3a731f7567338ed15d3ec549ce03b/README_WEIGHTS.md)（MTP 模块在权重里，不在 model.py）
 
 ### 3 训练系统
 
 - ★ **L07 并行训练入门：DP/TP/PP/EP 与 DualPipe**  
   算子快了，为什么整次训练还在等通信？  
-  论文：[2412.19437](https://arxiv.org/abs/2412.19437)
+  关键资料：[DeepSeek-V3 §3.2.1](https://arxiv.org/abs/2412.19437)（DualPipe）；[DualPipe/dualpipe/dualpipe.py](https://github.com/deepseek-ai/DualPipe/blob/030ce4325f4ebeb437da4ebc6d00a70469dd58ae/dualpipe/dualpipe.py)
 - ★ **L08 专家之间怎么传数据：All-to-All 与 DeepEP**  
   专家分布在不同 GPU 上，token 要被"寄"过去再"寄"回来，这一步怎么不拖后腿？  
-  论文：[2412.19437](https://arxiv.org/abs/2412.19437)
+  关键资料：[DeepSeek-V3 §3.2.2](https://arxiv.org/abs/2412.19437)（跨节点 All-to-All）；[DeepEP/deep_ep/buffers/ep.py](https://github.com/deepseek-ai/DeepEP/blob/f6aa38fe06cd4a0489e7730365d4e0114970a2f3/deep_ep/buffers/ep.py)
 - ★ **L09 FP8 训练：用 8 位数字训练 671B 模型**  
   位数越少越快越省显存，但精度怎么保住？  
-  论文：[2412.19437](https://arxiv.org/abs/2412.19437)
+  关键资料：[DeepSeek-V3 §3.3](https://arxiv.org/abs/2412.19437)（FP8 训练）；[DeepSeek-V3/inference/kernel.py](https://github.com/deepseek-ai/DeepSeek-V3/blob/9b4e9788e4a3a731f7567338ed15d3ec549ce03b/inference/kernel.py)
 - ○ **L10 集群与存储：Fire-Flyer、3FS、smallpond**  
   更贵的单卡，一定带来更划算的集群吗？上万张卡读数据，瓶颈在哪？  
-  论文：[2408.14158](https://arxiv.org/abs/2408.14158)
+  关键资料：[Fire-Flyer](https://arxiv.org/abs/2408.14158)；[3FS/docs/design_notes.md](https://github.com/deepseek-ai/3FS/blob/22fca04564c7cc230fd8b9523b8b92864e1dad47/docs/design_notes.md)
 - ○ **L11 回看硬件：V3 团队对芯片的期待**  
   瓶颈到底在计算、显存，还是跨节点带宽？  
-  论文：[2505.09343](https://arxiv.org/abs/2505.09343)
+  关键资料：[Insights into V3](https://arxiv.org/abs/2505.09343)；[DeepSeek-V3 §3.5](https://arxiv.org/abs/2412.19437)（对硬件设计的建议）
 
 ### 4 后训练与强化学习
 
 - ★ **L12 补课：从交叉熵到策略梯度**  
   模型已经会算概率了，奖励怎样改变下一次生成的分布？  
-  论文：[2402.03300](https://arxiv.org/abs/2402.03300)
+  关键资料：[DeepSeekMath §5.2.1](https://arxiv.org/abs/2402.03300)（SFT / DPO / PPO / GRPO 统一框架）；[DeepSeekMath §4.1.1](https://arxiv.org/abs/2402.03300)（从 PPO 讲起）
 - ★ **L13 GRPO：没有价值网络的 PPO**  
   同一道题采样 8 个答案、互相比较，为什么就能代替价值网络？  
-  论文：[2402.03300](https://arxiv.org/abs/2402.03300)
+  关键资料：[DeepSeekMath §4.1](https://arxiv.org/abs/2402.03300)（GRPO）；[DeepSeek-V3.2 §3.1](https://arxiv.org/abs/2512.02556)（规模化 GRPO 的修改）
 - ★ **L14 R1-Zero 与 R1：只给最终奖励，推理能力从哪来**  
   没有一步步的示范，只看最终答案对不对，模型怎么学会长链推理？  
-  论文：[2501.12948](https://arxiv.org/abs/2501.12948)
+  关键资料：[DeepSeek-R1 §2–§3](https://arxiv.org/abs/2501.12948)（R1-Zero 与 R1）
 - ○ **L15 奖励模型也能"多想几次"：GRM 与推理时扩展**  
   奖励模型判断一次不可靠时，多判几次怎样才真的有用？  
-  论文：[2504.02495](https://arxiv.org/abs/2504.02495)
+  关键资料：[GRM §3–§4](https://arxiv.org/abs/2504.02495)
 - ○ **L16 形式化证明：Prover V1 → V1.5 → V2**  
   怎样把"看起来对"变成程序能检查的证明？一个难证明怎么拆成子目标？  
-  论文：[2405.14333](https://arxiv.org/abs/2405.14333)；[2408.08152](https://arxiv.org/abs/2408.08152)；[2504.21801](https://arxiv.org/abs/2504.21801)
+  关键资料：[Prover-V1.5 §2.3、§3](https://arxiv.org/abs/2408.08152)；[Prover-V2 §2.1](https://arxiv.org/abs/2504.21801)（子目标分解）
 - ○ **L17 答对了不等于证对了：DeepSeekMath-V2 自我验证**  
   答案正确，推理过程仍可能有漏洞。模型怎么检查自己的证明？  
-  论文：[2511.22570](https://arxiv.org/abs/2511.22570)
+  关键资料：[Math-V2 §2](https://arxiv.org/abs/2511.22570)
 
 ### 5 长上下文与新架构
 
 - ★ **L18 注意力为什么贵：从 FlashAttention 到 NSA**  
   每个 token 都必须精读全部历史吗？  
-  论文：[2502.11089](https://arxiv.org/abs/2502.11089)
+  关键资料：[NSA §3.3](https://arxiv.org/abs/2502.11089)（压缩、选择、滑动窗口）
 - ★ **L19 DSA：V3.2 的"闪电索引器"**  
   先用一个很便宜的小打分器选出 top-k 历史 token，再做完整注意力，这样划算吗？  
-  论文：[2512.02556](https://arxiv.org/abs/2512.02556)
+  关键资料：[DeepSeek-V3.2 §2.1](https://arxiv.org/abs/2512.02556)（DSA）；[DeepSeek-V3.2-Exp/inference/model.py:435](https://github.com/deepseek-ai/DeepSeek-V3.2-Exp/blob/87e509a2e5a100d221c97df52c6e8be7835f0057/inference/model.py#L435)
 - ★ **L20 残差流与优化器：mHC 和 Muon**  
   更灵活的跨层连接为什么会让训练不稳？优化器除了 AdamW 还有什么选择？  
-  论文：[2512.24880](https://arxiv.org/abs/2512.24880)
+  关键资料：[mHC §4](https://arxiv.org/abs/2512.24880)（mHC）；[DeepSeek-V4 §2.4](https://arxiv.org/abs/2606.19348)（Muon）；[TileKernels/tile_kernels/torch/mhc.py](https://github.com/deepseek-ai/TileKernels/blob/c1cf914a82e6901c679445f872051ce44ac2cc63/tile_kernels/torch/mhc.py)
 - ★ **L21 Engram：查表也是一种稀疏**  
   熟悉的局部模式（比如固定搭配），每次都值得用神经网络重新算一遍吗？  
-  论文：[2601.07372](https://arxiv.org/abs/2601.07372)
+  关键资料：[Engram §2–§3](https://arxiv.org/abs/2601.07372)；[Engram/engram_demo_v1.py](https://github.com/deepseek-ai/Engram/blob/fb7f84a21f91223715394a33a1dc24bbfb7f788e/engram_demo_v1.py)
 - ★ **L22 V4：百万 token 上下文的 CSA + HCA**  
   上下文扩大到 100 万 token 时，哪些成本随长度增长，哪些仍由参数决定？  
-  论文：[2606.19348](https://arxiv.org/abs/2606.19348)
+  关键资料：[DeepSeek-V4 §2.3](https://arxiv.org/abs/2606.19348)（CSA 与 HCA）；[DeepInfer/deepinfer/model_executor/models/v4_modules/compress.py](https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/compress.py)
 - ★ **L23 V4.1-Flash：prefill 和 decode 用不同的计算量**  
   同一个模型，为什么读输入（prefill）只激活 8B 参数，生成输出（decode）激活 16B？KV cache 怎么压到每 token 890 字节？  
-  论文：[2609.19969](https://arxiv.org/abs/2609.19969)
+  关键资料：[V4.1-Flash §2.2–§2.3](https://arxiv.org/abs/2609.19969)（CED 与 CSA2）；[DeepInfer/deepinfer/model_executor/models/v4_modules/cross_layer.py](https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/deepinfer/model_executor/models/v4_modules/cross_layer.py)
 
 ### 6 推理部署
 
 - ★ **L24 推理系统入门：prefill、decode 与 PD 分离**  
   为什么生成阶段 GPU 常常"吃不饱"？DeepSeek 怎么用几百张卡一起服务一个模型？  
-  论文：[2412.19437](https://arxiv.org/abs/2412.19437)
+  关键资料：[DeepSeek-V3 §3.4](https://arxiv.org/abs/2412.19437)（prefill 与 decode）；[open-infra-index/202502OpenSourceWeek/day_6_one_more_thing_deepseekV3R1_inference_system_overview.md](https://github.com/deepseek-ai/open-infra-index/blob/56d86855fcf6e08fdfd45ce6280bd24322c93351/202502OpenSourceWeek/day_6_one_more_thing_deepseekV3R1_inference_system_overview.md)（官方推理系统概览）
 - ★ **L25 推测解码：从 MTP 到 DSpark**  
   一次多猜几个 token，为什么不一定更快？  
-  论文：[2607.05147](https://arxiv.org/abs/2607.05147)
+  关键资料：[DSpark §3](https://arxiv.org/abs/2607.05147)（DSpark）；[DeepSeek-V3 §2.2](https://arxiv.org/abs/2412.19437)（MTP）；[DeepSpec/README.md](https://github.com/deepseek-ai/DeepSpec/blob/005e03b81cec38b7da6399833d609ee89a2587f2/README.md)
 - ○ **L26 算子工程：为什么要自己写 kernel**  
-  PyTorch 已经很快了，DeepSeek 为什么还要写一堆 CUDA / TileLang 算子？
+  PyTorch 已经很快了，DeepSeek 为什么还要写一堆 CUDA / TileLang 算子？  
+  关键资料：[DeepSeek-V3/inference/kernel.py](https://github.com/deepseek-ai/DeepSeek-V3/blob/9b4e9788e4a3a731f7567338ed15d3ec549ce03b/inference/kernel.py)（Triton 入门）；[FlashMLA/docs/20250422-new-kernel-deep-dive.md](https://github.com/deepseek-ai/FlashMLA/blob/0f11e178da1f67becb087a324b400854931ec3e3/docs/20250422-new-kernel-deep-dive.md)；[DeepSeek-V4 §3.2](https://arxiv.org/abs/2606.19348)（TileLang）
 - ○ **L27 KV cache 的存储瓶颈：DualPath**  
   GPU 明明有空闲，请求为什么还卡在加载历史缓存上？  
-  论文：[2602.21548](https://arxiv.org/abs/2602.21548)
+  关键资料：[DualPath](https://arxiv.org/abs/2602.21548)
 - ○ **L28 通读生产推理框架 DeepInfer**  
   把前面讲过的所有技术装进一个真正上线的推理引擎，代码长什么样？  
-  论文：[2609.19969](https://arxiv.org/abs/2609.19969)
+  关键资料：[DeepInfer/README.md](https://github.com/deepseek-ai/DeepInfer/blob/553741557a57df44a46fb3ab72b6aafeaf945337/README.md)；[V4.1-Flash §3.2](https://arxiv.org/abs/2609.19969)（推理系统）
 
 ### 7 多模态
 
 - ○ **L29 视觉语言理解：DeepSeek-VL 与 VL2**  
   一张高分辨率图怎样变成语言模型能处理的 token？长图、宽图怎么切块？  
-  论文：[2403.05525](https://arxiv.org/abs/2403.05525)；[2412.10302](https://arxiv.org/abs/2412.10302)
+  关键资料：[DeepSeek-VL2 §2](https://arxiv.org/abs/2412.10302)；[DeepSeek-VL2/README.md](https://github.com/deepseek-ai/DeepSeek-VL2/blob/ef9f91e2b6426536b83294c11742c27be66361b1/README.md)
 - ○ **L30 理解与生成一体：Janus 系列**  
   理解一张图和画出一张图，为什么需要不同的视觉表示？  
-  论文：[2410.13848](https://arxiv.org/abs/2410.13848)；[2411.07975](https://arxiv.org/abs/2411.07975)；[2501.17811](https://arxiv.org/abs/2501.17811)
+  关键资料：[Janus §3.1](https://arxiv.org/abs/2410.13848)；[Janus-Pro](https://arxiv.org/abs/2501.17811)；[Janus/README.md](https://github.com/deepseek-ai/Janus/blob/1daa72fa409002d40931bd7b36a9280362469ead/README.md)
 - ○ **L31 OCR：用一张图压缩一页字**  
   用更少的视觉 token 表示一页字，会丢掉什么？双栏文档按什么顺序读？  
-  论文：[2510.18234](https://arxiv.org/abs/2510.18234)；[2601.20552](https://arxiv.org/abs/2601.20552)
+  关键资料：[DeepSeek-OCR §3.2](https://arxiv.org/abs/2510.18234)（DeepEncoder）；[DeepSeek-OCR 2](https://arxiv.org/abs/2601.20552)
 - ○ **L32 附：DreamCraft3D 三维生成**  
-  论文：[2310.16818](https://arxiv.org/abs/2310.16818)
+  关键资料：[DreamCraft3D](https://arxiv.org/abs/2310.16818)；[DreamCraft3D/README.md](https://github.com/deepseek-ai/DreamCraft3D/blob/5829ef116d36c871ce2b9e54a6153dd3856a1561/README.md)
 
 ### 8 代码与 Agent
 
 - ○ **L33 代码模型：Coder、Coder-V2 与 FIM**  
   代码补全为什么不能只练"接着往下写"？  
-  论文：[2401.14196](https://arxiv.org/abs/2401.14196)；[2406.11931](https://arxiv.org/abs/2406.11931)
+  关键资料：[DeepSeek-Coder §3.1.2](https://arxiv.org/abs/2401.14196)（FIM）；[Coder-V2](https://arxiv.org/abs/2406.11931)
 - ★ **L34 Agent 后训练：任务合成与 DSec 沙盒**  
   只生成正确答案，和在工具环境里把任务做完，训练反馈有什么不同？上万个沙盒怎么管？  
-  论文：[2512.02556](https://arxiv.org/abs/2512.02556)；[2609.22978](https://arxiv.org/abs/2609.22978)
+  关键资料：[DeepSeek-V3.2 §3.2](https://arxiv.org/abs/2512.02556)（在工具调用中思考）；[DSec](https://arxiv.org/abs/2609.22978)（Agent 沙盒）
 - ○ **L35 Agent Harness：插件怎么装得上、卸得干净**  
   插件卸载以后，它留下的副作用怎样撤销？  
-  论文：[2608.25512](https://arxiv.org/abs/2608.25512)
+  关键资料：[Harness 论文 §1.2、§3](https://arxiv.org/abs/2608.25512)
 
 ### 收官
 
 - ★ **L36 回顾：DeepSeek 的设计哲学**  
   把 36 节课串起来——DeepSeek 一直在省什么？（每 token 的计算、KV 显存、通信、数值位数、存储带宽）  
-  论文：[2505.09343](https://arxiv.org/abs/2505.09343)
+  关键资料：[Insights into V3](https://arxiv.org/abs/2505.09343)
 
 ## 一手资料
 
